@@ -5,14 +5,14 @@ import random
 import math
 from types import new_class
 import pygame
-from pygame import Vector2
+from pygame import K_SPACE, Vector2
 from pygame.locals import (
     K_q,
     K_ESCAPE,
     KEYDOWN,
     QUIT,
-    K_f,
-    K_LEFT, K_RIGHT, K_UP, K_DOWN
+    K_LEFT, K_RIGHT, K_UP, K_DOWN,
+    K_a, K_s, K_d, K_f,
 )
 
 PRESS_THRESHOLD = 100
@@ -28,6 +28,8 @@ SHIP_SPRITES = None
 PARTICLE_SPRITES = None
 
 LASER_SOUNDS = None
+WARP_SOUNDS = None
+MUSIC = None
 
 MOUSE_POSITION = None
 
@@ -36,6 +38,7 @@ BULLETS = []
 
 class StarField:
     def __init__(self):
+        self.warp_level = 0.0
         self.stars = []
         for _ in range(200):
             y = random.random() * SCREEN_DIMS.y * 2.0 - SCREEN_DIMS.y // 2
@@ -56,7 +59,7 @@ class StarField:
             self.new_star()
 
         for star in self.stars:
-            star.step(dt)
+            star.step(dt * (1.0 + self.warp_level))
             if star.pos.y >= (SCREEN_DIMS.y * 1.5):
                 self.kill(star)
 
@@ -187,7 +190,12 @@ class Ship:
         self.vel += dir * 2.0
 
     def draw(self):
-        SHIP_SPRITES.draw_sprite(1, self.pos.x, self.pos.y)
+        sprite = 1
+        if self.vel.x <= -10:
+            sprite = 0
+        if self.vel.x >= 10:
+            sprite = 2
+        SHIP_SPRITES.draw_sprite(sprite, self.pos.x, self.pos.y)
 
 
 class Controller:
@@ -199,6 +207,33 @@ class Controller:
 
     def step(dt):
         raise NotImplementedError
+
+
+class WarpController(Controller):
+    def __init__(self, star_field):
+        self.star_field = star_field
+        self.warping = False
+
+    def control(self, key, press):
+        if key == K_SPACE:
+            if press:
+                self.warping = True
+                WARP_SOUNDS[0].play()
+            else:
+                self.warping = False
+                self.warp_level = 0.0
+                WARP_SOUNDS[-1].play()
+
+    def step(self, dt):
+        if self.warping:
+            self.star_field.warp_level += dt * 0.00001
+            self.star_field.warp_level = min(20.0, self.star_field.warp_level)
+            for _ in range(10):
+                self.star_field.new_star()
+        else:
+            self.star_field.warp_level = max(
+                self.star_field.warp_level*0.99,
+                0.0)
 
 
 class ShipController(Controller):
@@ -244,6 +279,8 @@ class BulletController(Controller):
             return
 
         key_name = pygame.key.name(key)
+        if key not in [K_a, K_s, K_d, K_f]:
+            return
         if press:
             if len(self.key_to_charging_bullet.keys()) > 3:
                 return
@@ -269,12 +306,14 @@ def main():
     global PARTICLE_SPRITES
     global MOUSE_POSITION
     global LASER_SOUNDS
+    global WARP_SOUNDS
+    global MUSIC
 
     # PYGAME INIT, WINDOW SHIT
     pygame.init()
     PRIMARY_SURFACE = pygame.Surface(SCREEN_DIMS)
-    # WINDOW = pygame.display.set_mode(WINDOW_DIMS)
-    WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    WINDOW = pygame.display.set_mode(WINDOW_DIMS)
+    # WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(False)
 
     # ASSET LOADING
@@ -284,6 +323,14 @@ def main():
         pygame.mixer.Sound('laserShoot1.wav'),
         pygame.mixer.Sound('laserShoot2.wav'),
         pygame.mixer.Sound('laserShoot3.wav'),
+    ]
+    MUSIC = [
+        pygame.mixer.Sound('loading.wav'),
+        pygame.mixer.Sound('menu.wav'),
+    ]
+    WARP_SOUNDS = [
+        pygame.mixer.Sound('start_warping.wav'),
+        pygame.mixer.Sound('stop_warping.wav'),
     ]
 
     # CLOCK
@@ -296,10 +343,13 @@ def main():
     star_field = StarField()
     ship_controller = ShipController(ship)
     bullet_controller = BulletController(ship)
+    warp_controller = WarpController(star_field)
     controllers = []
-    controllers.extend([ship_controller, bullet_controller])
+    controllers.extend([ship_controller, bullet_controller, warp_controller])
 
     presstimes = {}
+    MUSIC[0].play()
+    MUSIC[1].play()
     while running:
         t = pygame.time.get_ticks()
         dt = (t - lt) / 1000.0
@@ -325,10 +375,10 @@ def main():
                     d = t - presstimes[name]
                     del presstimes[name]
 
-                    if d < PRESS_THRESHOLD:
-                        print(f"{name} - pressed")
-                    else:
-                        print(f"{name} - released after - {d}s")
+                    # if d < PRESS_THRESHOLD:
+                    #     print(f"{name} - pressed")
+                    # else:
+                    #     print(f"{name} - released after - {d}s")
 
                     for controller in controllers:
                         controller.control(event.key, press=False)
