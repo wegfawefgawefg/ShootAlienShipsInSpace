@@ -53,8 +53,12 @@ BULLETS = []
 class Bullet:
     ID = 0
     SPEED = 1
+    MAX_TYPE = 11
+    MIN_LIFE = 0.02
+    LIFE_SPAN_PER_TYPE = 0.01
 
     def __init__(self, x, y, t) -> None:
+        self.age = 0
         self.creation_time = pygame.time.get_ticks()
         self.id = Bullet.ID
         Bullet.ID += 1
@@ -63,19 +67,26 @@ class Bullet:
         self.x, self.y, self.t = x, y - 8, t
         BULLETS.append(self)
 
-    def step(self):
+    def step(self, dt):
+
         if self.moving:
+            self.age += dt
             self.y -= Bullet.SPEED
+
+        if self.age > (Bullet.MIN_LIFE + Bullet.LIFE_SPAN_PER_TYPE * self.t):
+            self.kill()
         if self.y < 0:
-            # remove yourself from the bullet list
-            for i in range(len(BULLETS)):
-                bullet = BULLETS[i]
-                if bullet.id == self.id:
-                    BULLETS.pop(i)
-                    break
+            self.kill()
+
+    def kill(self):
+        for i in range(len(BULLETS)):
+            bullet = BULLETS[i]
+            if bullet.id == self.id:
+                BULLETS.pop(i)
+                break
 
     def charge(self, t):
-        self.t = min(11, (t - self.creation_time) // 50)
+        self.t = min(Bullet.MAX_TYPE, (t - self.creation_time) // 50)
 
     def release(self):
         self.moving = True
@@ -102,6 +113,7 @@ def main():
 
     clock = pygame.time.Clock()
     running = True
+    lt = pygame.time.get_ticks()
 
     press = 100
 
@@ -109,6 +121,8 @@ def main():
     presstimes = {}
     while running:
         t = pygame.time.get_ticks()
+        dt = (t - lt) / 1000.0
+        lt = t
 
         mt = pygame.mouse.get_pos()
         m = (Vector2(mt[0], mt[1]).elementwise() /
@@ -122,7 +136,7 @@ def main():
                 name = pygame.key.name(event.key)
                 if event.type == pygame.KEYDOWN:
                     presstimes[name] = t
-                    new_bullet = Bullet(m.x, m.y - 8, 0)
+                    new_bullet = Bullet(m.x, m.y, 0)
                     key_to_charging_bullet[name] = new_bullet
 
                 elif event.type == pygame.KEYUP:
@@ -140,6 +154,9 @@ def main():
 
             if event.type == pygame.QUIT:
                 running = False
+
+        for bullet in key_to_charging_bullet.values():
+            bullet.charge(t)
 
         # launch holds
         # for key_name in presstimes:
@@ -159,7 +176,7 @@ def main():
         SHIP_SPRITES.draw_sprite(1, m.x, m.y)
 
         for bullet in BULLETS:
-            bullet.step()
+            bullet.step(dt)
             bullet.draw()
 
         blit = pygame.transform.scale(PRIMARY_SURFACE, WINDOW.get_size())
