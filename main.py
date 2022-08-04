@@ -312,8 +312,8 @@ def main():
     # PYGAME INIT, WINDOW SHIT
     pygame.init()
     PRIMARY_SURFACE = pygame.Surface(SCREEN_DIMS)
-    WINDOW = pygame.display.set_mode(WINDOW_DIMS)
-    # WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    # WINDOW = pygame.display.set_mode(WINDOW_DIMS)
+    WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(False)
 
     # ASSET LOADING
