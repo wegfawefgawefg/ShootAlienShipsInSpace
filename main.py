@@ -38,7 +38,7 @@ BULLETS = []
 
 class StarField:
     def __init__(self):
-        self.warp_level = 0.0
+        self.warp_level = 10.0
         self.stars = []
         for _ in range(200):
             y = random.random() * SCREEN_DIMS.y * 2.0 - SCREEN_DIMS.y // 2
