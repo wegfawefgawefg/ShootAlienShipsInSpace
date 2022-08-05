@@ -1,2 +1,2 @@
-# game_input_tools
-game_input_tools
+# Shoot Alien Ships In Space
+free and open source game
