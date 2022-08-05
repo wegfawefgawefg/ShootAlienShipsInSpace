@@ -351,16 +351,19 @@ def do_main_menu():
     global MAIN_MENU_ASSETS
     global GAME_STATE
 
+    DSCREEN_DIMS = SCREEN_DIMS * 2
+    PRIMARY_SURFACE = pygame.Surface(DSCREEN_DIMS)
+
     clock = pygame.time.Clock()
     lt = pygame.time.get_ticks()
 
     MUSIC[2].play(loops=-1)
 
-    size = SCREEN_DIMS * 1.2
+    size = DSCREEN_DIMS * 1.2
     mm_background = pygame.transform.scale(
         MAIN_MENU_ASSETS[0], (size.x, size.y))
 
-    tsize = SCREEN_DIMS * 1.2
+    tsize = DSCREEN_DIMS * 1.2
     mm_title = pygame.transform.scale(
         MAIN_MENU_ASSETS[1], (tsize.x, tsize.y))
 
@@ -388,15 +391,15 @@ def do_main_menu():
                 return False
 
         PRIMARY_SURFACE.fill((255, 0, 0))
-        offset = SCREEN_DIMS.y / 10.0
+        offset = DSCREEN_DIMS.y / 10.0
         background_y = 0.3*math.sin(t*0.003)*offset - offset * 1.5
         background_x = 0.3*math.sin(t*0.0013)*offset - offset * 1.5
         PRIMARY_SURFACE.blit(mm_background, (background_x, background_y))
 
-        t_o = -SCREEN_DIMS * 0.1
+        t_o = -DSCREEN_DIMS * 0.1
 
         title_y = 0.5 + math.sin(t*0.001)*0.5
-        title_y *= SCREEN_DIMS.y * 0.05
+        title_y *= DSCREEN_DIMS.y * 0.05
         title_y -= title_y * 0.5
 
         PRIMARY_SURFACE.blit(mm_title_behind, (t_o.x, title_y+t_o.y))
@@ -421,6 +424,8 @@ def do_main_game():
     global MAIN_MENU_ASSETS
     global GAME_STATE
     global PHYSWORLD
+
+    PRIMARY_SURFACE = pygame.Surface(SCREEN_DIMS)
 
     PHYSWORLD = pymunk.Space()
 
