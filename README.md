@@ -1,5 +1,5 @@
-# game_input_tools
+# Shoot Alien Space Ships In Space
 
-game_input_tools
+free and open source game
 
 ![Alt text](gitcover.png?raw=true "CoverPic")
