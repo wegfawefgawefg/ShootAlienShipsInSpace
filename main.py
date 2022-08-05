@@ -15,8 +15,9 @@ from pygame.locals import (
     K_a, K_s, K_d, K_f,
 )
 
-PRESS_THRESHOLD = 100
+import pymunk
 
+PRESS_THRESHOLD = 100
 
 SCREEN_DIMS = Vector2(240, 160)
 WINDOW_DIMS = SCREEN_DIMS * 4.0
@@ -317,20 +318,20 @@ def main():
     pygame.mouse.set_visible(False)
 
     # ASSET LOADING
-    SHIP_SPRITES = SpriteSheet("./ships.png", 10, 10, 8, 8)
-    PARTICLE_SPRITES = SpriteSheet("./particles.png", 6, 10, 8, 8)
+    SHIP_SPRITES = SpriteSheet("assets/ships.png", 10, 10, 8, 8)
+    PARTICLE_SPRITES = SpriteSheet("assets/particles.png", 6, 10, 8, 8)
     LASER_SOUNDS = [
-        pygame.mixer.Sound('laserShoot1.wav'),
-        pygame.mixer.Sound('laserShoot2.wav'),
-        pygame.mixer.Sound('laserShoot3.wav'),
+        pygame.mixer.Sound('assets/laserShoot1.wav'),
+        pygame.mixer.Sound('assets/laserShoot2.wav'),
+        pygame.mixer.Sound('assets/laserShoot3.wav'),
     ]
     MUSIC = [
-        pygame.mixer.Sound('loading.wav'),
-        pygame.mixer.Sound('menu.wav'),
+        pygame.mixer.Sound('assets/loading.wav'),
+        pygame.mixer.Sound('assets/menu.wav'),
     ]
     WARP_SOUNDS = [
-        pygame.mixer.Sound('start_warping.wav'),
-        pygame.mixer.Sound('stop_warping.wav'),
+        pygame.mixer.Sound('assets/start_warping.wav'),
+        pygame.mixer.Sound('assets/stop_warping.wav'),
     ]
 
     # CLOCK
@@ -348,8 +349,8 @@ def main():
     controllers.extend([ship_controller, bullet_controller, warp_controller])
 
     presstimes = {}
-    MUSIC[0].play()
-    MUSIC[1].play()
+    MUSIC[0].play(loops=-1)
+    MUSIC[1].play(loops=-1)
     while running:
         t = pygame.time.get_ticks()
         dt = (t - lt) / 1000.0
