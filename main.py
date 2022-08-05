@@ -3,8 +3,6 @@ from pprint import pprint
 import random
 
 import math
-from types import new_class
-from matplotlib.pyplot import title
 import pygame
 from pygame import K_SPACE, Vector2
 from pygame.locals import (
@@ -189,16 +187,17 @@ class Bullet:
 
 class KillZones:
     def __init__(self) -> None:
-        self.left_shape = self.make_body((0, 0), (0, SCREEN_DIMS.y))
-        right_shape_x = SCREEN_DIMS.x - 2
-        self.right_shape = self.make_body(
-            (right_shape_x, 0), (right_shape_x, SCREEN_DIMS.y))
+        self.right_shape = self.make_body((50, 0), (70, SCREEN_DIMS.y))
+        self.left_shape = self.make_body((0, 0), (20, SCREEN_DIMS.y))
+        right_shape_x = SCREEN_DIMS.x - 10
+
+        self.back_shape = self.make_body((0, 1), (SCREEN_DIMS.x, 1))
 
     def make_body(self, a, b):
         line_moment = pymunk.moment_for_segment(0, a, b, 10)
-        line_body = pymunk.Body(10, line_moment, body_type=pymunk.Body.STATIC)
+        line_body = pymunk.Body(1, line_moment, body_type=pymunk.Body.STATIC)
         line_body.position = a
-        line_shape = pymunk.Segment(line_body, a, b, 10)
+        line_shape = pymunk.Segment(line_body, a, b, 1)
         PHYSWORLD.add(line_body, line_shape)
         return line_shape
 
@@ -216,6 +215,7 @@ class KillZones:
     def draw(self):
         self.draw_line(self.left_shape)
         self.draw_line(self.right_shape)
+        self.draw_line(self.back_shape)
 
 
 class Ship:
