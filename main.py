@@ -17,6 +17,7 @@ from pygame.locals import (
 )
 
 import pymunk
+from pymunk import Vec2d as pvec2
 
 PRESS_THRESHOLD = 100
 
@@ -35,6 +36,7 @@ WARP_SOUNDS = None
 MUSIC = None
 
 MOUSE_POSITION = None
+PHYSWORLD = None
 
 GAME_STATE = "main_menu"
 
@@ -66,9 +68,9 @@ class StarField:
         for star in self.stars:
             star.step(dt * (1.0 + self.warp_level))
             if star.pos.y >= (SCREEN_DIMS.y * 1.5):
-                self.kill(star)
+                self.remove(star)
 
-    def kill(self, star):
+    def remove(self, star):
         for i in range(len(self.stars)):
             s = self.stars[i]
             if star.id == s.id:
@@ -126,49 +128,94 @@ class SpriteSheet:
 
 class Bullet:
     ID = 0
-    MIN_SPEED = 0.1
-    SPEED_PER_TYPE = 0.2
+    SPEED = 1600.0
     MAX_TYPE = 11
     MIN_LIFE = 0.02
     LIFE_SPAN_PER_TYPE = 0.04
 
     def __init__(self, pos, t) -> None:
+        random.choice(LASER_SOUNDS).play()
         self.age = 0
         self.creation_time = pygame.time.get_ticks()
         self.id = Bullet.ID
         Bullet.ID += 1
 
-        self.moving = False
         self.pos = pos
         self.pos.y - 8
         self.t = t
         BULLETS.append(self)
 
+        mass = 10
+        radius = 2
+        inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
+        body = pymunk.Body(mass, inertia)
+        body.position = self.pos.x, self.pos.y
+        self.shape = pymunk.Circle(body, radius, pvec2(0, 0))
+
+        body.apply_impulse_at_local_point(pvec2(0.0, -Bullet.SPEED))
+        PHYSWORLD.add(body, self.shape)
+
     def step(self, dt):
-        if self.moving:
-            self.age += dt
-            self.pos.y -= Bullet.MIN_SPEED + Bullet.SPEED_PER_TYPE * self.t
+        # if self.moving:
+        #     self.age += dt
+        #     self.pos.y -= Bullet.MIN_SPEED + Bullet.SPEED_PER_TYPE * self.t
 
         if self.age > (Bullet.MIN_LIFE + Bullet.LIFE_SPAN_PER_TYPE * self.t):
-            self.kill()
+            self.remove()
         if self.pos.y < 0:
-            self.kill()
+            self.remove()
 
-    def kill(self):
+    def remove(self):
         for i in range(len(BULLETS)):
             bullet = BULLETS[i]
             if bullet.id == self.id:
                 BULLETS.pop(i)
                 break
 
-    def charge(self, t):
-        self.t = min(Bullet.MAX_TYPE, (t - self.creation_time) // 16)
-
-    def release(self):
-        self.moving = True
+        PHYSWORLD.remove(self.shape, self.shape.body)
+        PHYSWORLD.remove(self.shape)
 
     def draw(self):
-        PARTICLE_SPRITES.draw_sprite(self.t, self.pos.x, self.pos.y)
+        p = self.get_pos()
+        PARTICLE_SPRITES.draw_sprite(self.t, p.x, p.y)
+        pygame.draw.circle(
+            PRIMARY_SURFACE, (255, 0, 0), (p.x, p.y),
+            self.shape.radius, 1
+        )
+
+    def get_pos(self):
+        return self.shape.body.position
+
+
+class KillZones:
+    def __init__(self) -> None:
+        self.left_shape = self.make_body((0, 0), (0, SCREEN_DIMS.y))
+        right_shape_x = SCREEN_DIMS.x - 2
+        self.right_shape = self.make_body(
+            (right_shape_x, 0), (right_shape_x, SCREEN_DIMS.y))
+
+    def make_body(self, a, b):
+        line_moment = pymunk.moment_for_segment(0, a, b, 10)
+        line_body = pymunk.Body(10, line_moment, body_type=pymunk.Body.STATIC)
+        line_body.position = a
+        line_shape = pymunk.Segment(line_body, a, b, 10)
+        PHYSWORLD.add(line_body, line_shape)
+        return line_shape
+
+    def step(dt):
+        pass
+
+    def draw_line(self, shape):
+        pygame.draw.line(
+            PRIMARY_SURFACE, (255, 0, 0),
+            (shape.a.x, shape.a.y),
+            (shape.b.x, shape.b.y),
+            1
+        )
+
+    def draw(self):
+        self.draw_line(self.left_shape)
+        self.draw_line(self.right_shape)
 
 
 class Ship:
@@ -286,18 +333,8 @@ class BulletController(Controller):
         key_name = pygame.key.name(key)
         if key not in [K_a, K_s, K_d, K_f]:
             return
-        if press:
-            if len(self.key_to_charging_bullet.keys()) > 3:
-                return
+        if press and key == K_f:
             new_bullet = Bullet(Vector2(self.ship.pos.x, self.ship.pos.y), 1)
-            self.key_to_charging_bullet[key_name] = new_bullet
-        else:
-            if key_name in self.key_to_charging_bullet:
-                bullet = self.key_to_charging_bullet[key_name]
-                bullet.release()
-                random.choice(LASER_SOUNDS).play()
-                self.ship.fly(Vector2(0.0, bullet.t*3.0))
-                del self.key_to_charging_bullet[key_name]
 
     def step(self, t):
         for bullet in self.key_to_charging_bullet.values():
@@ -380,6 +417,9 @@ def do_main_game():
     global MUSIC
     global MAIN_MENU_ASSETS
     global GAME_STATE
+    global PHYSWORLD
+
+    PHYSWORLD = pymunk.Space()
 
     #   GAME STATE
     ship = Ship()
@@ -394,12 +434,49 @@ def do_main_game():
     MOUSE_POSITION = (Vector2(mt[0], mt[1]).elementwise() /
                       WINDOW_DIMS).elementwise() * SCREEN_DIMS
 
+    class Debris:
+        def __init__(self) -> None:
+            mass = 10
+            radius = 3
+            inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
+            body = pymunk.Body(mass, inertia)
+            center = SCREEN_DIMS // 2
+            body.position = center.x, center.y
+            self.shape = pymunk.Circle(body, radius, pvec2(0, 0))
+
+            PHYSWORLD.add(body, self.shape)
+
+        def get_pos(self):
+            return self.shape.body.position
+
+        def draw(self):
+            p = self.get_pos()
+            pygame.draw.circle(
+                PRIMARY_SURFACE, (255, 0, 0), (p.x, p.y),
+                self.shape.radius, 1
+            )
+            SHIP_SPRITES.draw_sprite(4, p.x, p.y)
+
+        def remove(self):
+            PHYSWORLD.remove(self.shape, self.shape.body)
+            PHYSWORLD.remove(self.shape)
+
+        def step(self):
+            pass
+
     # CLOCK
     clock = pygame.time.Clock()
     lt = pygame.time.get_ticks()
 
     MUSIC[0].play(loops=-1)
     MUSIC[1].play(loops=-1)
+
+    enemies = []
+    enemies.append(Debris())
+    enemies.append(Debris())
+    enemies.append(Debris())
+    enemies.append(Debris())
+    kill_zones = KillZones()
 
     presstimes = {}
     running = True
@@ -446,18 +523,23 @@ def do_main_game():
         for controller in controllers:
             controller.step(t)
 
+        PHYSWORLD.step(dt)
+
         PRIMARY_SURFACE.fill((0, 0, 0))
 
         star_field.step(dt)
         star_field.draw(ship)
 
         for bullet in BULLETS:
-            if not bullet.moving:
-                bullet.pos.x = ship.pos.x
-                bullet.pos.y = ship.pos.y
-                bullet.pos.y -= 8
             bullet.step(dt)
             bullet.draw()
+
+        for enemy in enemies:
+            enemy.step()
+            enemy.draw()
+
+        kill_zones.step()
+        kill_zones.draw()
 
         ship.step(dt)
         ship.draw()
