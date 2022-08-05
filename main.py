@@ -4,6 +4,7 @@ import random
 
 import math
 from types import new_class
+from matplotlib.pyplot import title
 import pygame
 from pygame import K_SPACE, Vector2
 from pygame.locals import (
@@ -27,12 +28,15 @@ WINDOW = None
 
 SHIP_SPRITES = None
 PARTICLE_SPRITES = None
+MAIN_MENU_ASSETS = None
 
 LASER_SOUNDS = None
 WARP_SOUNDS = None
 MUSIC = None
 
 MOUSE_POSITION = None
+
+GAME_STATE = "main_menu"
 
 BULLETS = []
 
@@ -300,7 +304,72 @@ class BulletController(Controller):
             bullet.charge(t)
 
 
-def main():
+def do_main_menu():
+    global PRIMARY_SURFACE
+    global WINDOW
+    global MUSIC
+    global MAIN_MENU_ASSETS
+    global GAME_STATE
+
+    clock = pygame.time.Clock()
+    lt = pygame.time.get_ticks()
+
+    MUSIC[2].play(loops=-1)
+
+    size = SCREEN_DIMS * 1.2
+    mm_background = pygame.transform.scale(
+        MAIN_MENU_ASSETS[0], (size.x, size.y))
+
+    tsize = SCREEN_DIMS * 1.2
+    mm_title = pygame.transform.scale(
+        MAIN_MENU_ASSETS[1], (tsize.x, tsize.y))
+
+    tbsize = tsize * 1.1
+    mm_title_behind = pygame.transform.scale(
+        MAIN_MENU_ASSETS[1], (tbsize.x, tbsize.y))
+    mm_title_behind.fill((0, 0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+    mm_title_behind.set_alpha(220)
+
+    running = True
+    while running:
+        t = pygame.time.get_ticks()
+        dt = (t - lt) / 1000.0
+        lt = t
+
+        for event in pygame.event.get():
+            if event.type in [pygame.KEYDOWN]:
+                if event.key in [K_ESCAPE, K_q]:
+                    running = False
+                    return False
+                else:
+                    GAME_STATE = "game"
+                    return True
+            if event.type == pygame.QUIT:
+                return False
+
+        PRIMARY_SURFACE.fill((255, 0, 0))
+        offset = SCREEN_DIMS.y / 10.0
+        background_y = 0.3*math.sin(t*0.003)*offset - offset * 1.5
+        background_x = 0.3*math.sin(t*0.0013)*offset - offset * 1.5
+        PRIMARY_SURFACE.blit(mm_background, (background_x, background_y))
+
+        t_o = -SCREEN_DIMS * 0.1
+
+        title_y = 0.5 + math.sin(t*0.001)*0.5
+        title_y *= SCREEN_DIMS.y * 0.05
+        title_y -= title_y * 0.5
+
+        PRIMARY_SURFACE.blit(mm_title_behind, (t_o.x, title_y+t_o.y))
+        PRIMARY_SURFACE.blit(
+            mm_title, (t_o.x - t_o.x * 0.4, title_y+t_o.y - t_o.y * 0.2))
+
+        blit = pygame.transform.scale(PRIMARY_SURFACE, WINDOW.get_size())
+        WINDOW.blit(blit, (0, 0))
+        pygame.display.flip()
+    return True
+
+
+def do_main_game():
     global PRIMARY_SURFACE
     global WINDOW
     global SHIP_SPRITES
@@ -309,35 +378,8 @@ def main():
     global LASER_SOUNDS
     global WARP_SOUNDS
     global MUSIC
-
-    # PYGAME INIT, WINDOW SHIT
-    pygame.init()
-    PRIMARY_SURFACE = pygame.Surface(SCREEN_DIMS)
-    # WINDOW = pygame.display.set_mode(WINDOW_DIMS)
-    WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    pygame.mouse.set_visible(False)
-
-    # ASSET LOADING
-    SHIP_SPRITES = SpriteSheet("assets/ships.png", 10, 10, 8, 8)
-    PARTICLE_SPRITES = SpriteSheet("assets/particles.png", 6, 10, 8, 8)
-    LASER_SOUNDS = [
-        pygame.mixer.Sound('assets/laserShoot1.wav'),
-        pygame.mixer.Sound('assets/laserShoot2.wav'),
-        pygame.mixer.Sound('assets/laserShoot3.wav'),
-    ]
-    MUSIC = [
-        pygame.mixer.Sound('assets/loading.wav'),
-        pygame.mixer.Sound('assets/menu.wav'),
-    ]
-    WARP_SOUNDS = [
-        pygame.mixer.Sound('assets/start_warping.wav'),
-        pygame.mixer.Sound('assets/stop_warping.wav'),
-    ]
-
-    # CLOCK
-    clock = pygame.time.Clock()
-    running = True
-    lt = pygame.time.get_ticks()
+    global MAIN_MENU_ASSETS
+    global GAME_STATE
 
     #   GAME STATE
     ship = Ship()
@@ -348,22 +390,31 @@ def main():
     controllers = []
     controllers.extend([ship_controller, bullet_controller, warp_controller])
 
-    presstimes = {}
+    mt = pygame.mouse.get_pos()
+    MOUSE_POSITION = (Vector2(mt[0], mt[1]).elementwise() /
+                      WINDOW_DIMS).elementwise() * SCREEN_DIMS
+
+    # CLOCK
+    clock = pygame.time.Clock()
+    lt = pygame.time.get_ticks()
+
     MUSIC[0].play(loops=-1)
     MUSIC[1].play(loops=-1)
+
+    presstimes = {}
+    running = True
     while running:
         t = pygame.time.get_ticks()
         dt = (t - lt) / 1000.0
         lt = t
 
-        mt = pygame.mouse.get_pos()
-        MOUSE_POSITION = (Vector2(mt[0], mt[1]).elementwise() /
-                          WINDOW_DIMS).elementwise() * SCREEN_DIMS
-
         for event in pygame.event.get():
             if event.type in [pygame.KEYDOWN, pygame.KEYUP]:
                 if event.key in [K_ESCAPE, K_q]:
-                    running = False
+                    MUSIC[0].stop()
+                    MUSIC[1].stop()
+                    GAME_STATE = "main_menu"
+                    return True
 
                 name = pygame.key.name(event.key)
                 if event.type == pygame.KEYDOWN:
@@ -373,6 +424,8 @@ def main():
                         controller.control(event.key, press=True)
 
                 elif event.type == pygame.KEYUP:
+                    if name not in presstimes:
+                        continue
                     d = t - presstimes[name]
                     del presstimes[name]
 
@@ -385,7 +438,10 @@ def main():
                         controller.control(event.key, press=False)
 
             if event.type == pygame.QUIT:
-                running = False
+                MUSIC[0].stop()
+                MUSIC[1].stop()
+                GAME_STATE = "main_menu"
+                return True
 
         for controller in controllers:
             controller.step(t)
@@ -409,6 +465,56 @@ def main():
         blit = pygame.transform.scale(PRIMARY_SURFACE, WINDOW.get_size())
         WINDOW.blit(blit, (0, 0))
         pygame.display.flip()
+    return True
+
+
+def main():
+    global PRIMARY_SURFACE
+    global WINDOW
+    global SHIP_SPRITES
+    global PARTICLE_SPRITES
+    global MOUSE_POSITION
+    global LASER_SOUNDS
+    global WARP_SOUNDS
+    global MUSIC
+    global MAIN_MENU_ASSETS
+    global GAME_STATE
+
+    # PYGAME INIT, WINDOW SHIT
+    pygame.init()
+    PRIMARY_SURFACE = pygame.Surface(SCREEN_DIMS)
+    WINDOW = pygame.display.set_mode(WINDOW_DIMS)
+    # WINDOW = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    pygame.mouse.set_visible(False)
+
+    # ASSET LOADING
+    SHIP_SPRITES = SpriteSheet("assets/ships.png", 10, 10, 8, 8)
+    PARTICLE_SPRITES = SpriteSheet("assets/particles.png", 6, 10, 8, 8)
+    LASER_SOUNDS = [
+        pygame.mixer.Sound('assets/laserShoot1.wav'),
+        pygame.mixer.Sound('assets/laserShoot2.wav'),
+        pygame.mixer.Sound('assets/laserShoot3.wav'),
+    ]
+    MUSIC = [
+        pygame.mixer.Sound('assets/loading.wav'),
+        pygame.mixer.Sound('assets/menu.wav'),
+        pygame.mixer.Sound('assets/mainmenumusic.wav'),
+    ]
+    WARP_SOUNDS = [
+        pygame.mixer.Sound('assets/start_warping.wav'),
+        pygame.mixer.Sound('assets/stop_warping.wav'),
+    ]
+    MAIN_MENU_ASSETS = [
+        pygame.image.load('assets/cover.png'),
+        pygame.image.load('assets/title.png')
+    ]
+
+    running = True
+    while running:
+        if GAME_STATE == "main_menu":
+            running = do_main_menu()
+        elif GAME_STATE == "game":
+            running = do_main_game()
     pygame.quit()
 
 
