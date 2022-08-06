@@ -38,6 +38,7 @@ class MainMenu(Scene):
     def control(self, event):
         if event.type == pygame.KEYDOWN and event.key in [K_ESCAPE, K_q]:
             self.game.quit()
+            return
 
             # self.game.music.main_menu_song.stop()
             # self.game.graphics.primary_surface = pygame.Surface(

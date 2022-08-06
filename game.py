@@ -1,6 +1,7 @@
 from enum import Enum, auto
 
 import pygame
+from pygame import Vector2
 
 from graphics import Graphics
 from images import Images
@@ -33,7 +34,11 @@ class Game:
         self.running = False
 
     def get_mouse_position(self):
-        pass
+        wm = pygame.mouse.get_pos()
+        return (
+            Vector2(wm[0], wm[1]).elementwise()
+            / self.graphics.window_dims).elementwise() \
+            * self.graphics.screen_dims
 
     def run(self):
         last_time = pygame.time.get_ticks()
