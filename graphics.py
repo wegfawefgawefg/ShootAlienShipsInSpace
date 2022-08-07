@@ -12,3 +12,14 @@ class Graphics:
         # self.window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
         pygame.mouse.set_visible(False)
+
+    def draw_sprite(self, sprite_sheet, tile, x, y):
+        x, y = int(x), int(y)
+        tile = tile % (sprite_sheet.width * sprite_sheet.height)
+        self.primary_surface.blit(
+            sprite_sheet.sheet,
+            (
+                x - sprite_sheet.half_sprite_width,
+                y - sprite_sheet.half_sprite_height
+            ),
+            sprite_sheet.get_tile_area(tile))

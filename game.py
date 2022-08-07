@@ -16,7 +16,8 @@ class Game:
 
     def __init__(self) -> None:
         pygame.init()
-        self.time = 0  # time
+        self.time = pygame.time.get_ticks()
+        self.dt = 1.0 / 60.0
 
         self.graphics = Graphics()
         self.images = Images()
@@ -25,6 +26,7 @@ class Game:
         self.music = Music()
 
         self.scene = MainMenu(self)
+        self.running = True
 
     def set_scene(self, scene):
         del self.scene
@@ -42,10 +44,7 @@ class Game:
 
     def run(self):
         last_time = pygame.time.get_ticks()
-        self.running = True
         while self.running:
-            self.time = pygame.time.get_ticks()
-            self.dt = (self.time - last_time) / 1000.0
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -54,11 +53,16 @@ class Game:
                     self.scene.control(event)
             if self.running == False:
                 break
-            self.scene.step()
-            self.scene.draw()
 
+            self.scene.step()
+
+            self.graphics.primary_surface.fill((0, 0, 0))
+            self.scene.draw()
             blit = pygame.transform.scale(
                 self.graphics.primary_surface, self.graphics.window.get_size())
             self.graphics.window.blit(blit, (0, 0))
             pygame.display.flip()
+
+            self.time = pygame.time.get_ticks()
+            self.dt = (self.time - last_time) / 1000.0
         pygame.quit()

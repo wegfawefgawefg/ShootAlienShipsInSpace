@@ -3,31 +3,28 @@ import pymunk
 
 import entity
 
-'''
-add physworld to scene
-'''
-
 
 class KillZones(entity.Entity):
     def __init__(self, scene) -> None:
-        super.__init__(scene)
+        super().__init__(scene)
 
+        dims = self.scene.game.graphics.screen_dims
         self.right_shape = self.make_body(
-            (SCREEN_DIMS.x, 0), (SCREEN_DIMS.x, SCREEN_DIMS.y))
-        self.left_shape = self.make_body((-1, 0), (-1, SCREEN_DIMS.y))
-        self.back_shape = self.make_body((0, 0), (SCREEN_DIMS.x, 0))
+            (dims.x, 0), (dims.x, dims.y))
+        self.left_shape = self.make_body((-1, 0), (-1, dims.y))
+        self.back_shape = self.make_body((0, 0), (dims.x, 0))
         self.front_shape = self.make_body(
-            (0, SCREEN_DIMS.y), (SCREEN_DIMS.x, SCREEN_DIMS.y))
+            (0, dims.y), (dims.x, dims.y))
 
     def make_body(self, a, b):
         line_moment = pymunk.moment_for_segment(0, a, b, 10)
         line_body = pymunk.Body(1, line_moment, body_type=pymunk.Body.STATIC)
         # line_body.position = a
         line_shape = pymunk.Segment(line_body, a, b, 1)
-        PHYSWORLD.add(line_body, line_shape)
+        self.scene.physics.add(line_body, line_shape)
         return line_shape
 
-    def step():
+    def step(self):
         pass
 
     def draw_line(self, shape):

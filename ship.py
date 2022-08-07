@@ -1,21 +1,31 @@
-class Ship:
-    def __init__(self):
+from pygame import Vector2
+
+from entity import Entity
+
+
+class Ship(Entity):
+    def __init__(self, scene):
+        super().__init__(scene)
+
         self.vel = Vector2(0.0, 0.0)
-        self.pos = Vector2(SCREEN_DIMS.x//2, SCREEN_DIMS.y*0.8)
+        self.pos = self.scene.game.graphics.screen_dims.elementwise() * Vector2(0.5, 0.8)
 
-    def step(self, dt):
-        self.pos += self.vel * dt
-        self.vel *= 0.98
+    def step(self):
+        dt = self.scene.game.dt
+        self.pos = self.pos.elementwise() + self.vel * dt
+        self.vel = self.vel * 0.98 * dt
 
-        if self.pos.y >= SCREEN_DIMS.y:
-            self.pos.y = SCREEN_DIMS.y
+        x_max = self.scene.game.graphics.screen_dims.x
+        y_max = self.scene.game.graphics.screen_dims.y
+        if self.pos.y >= y_max:
+            self.pos.y = y_max
             self.vel.y = 0.0
 
         if self.pos.x < 0:
             self.pos.x = 0
             self.vel.x = 0
-        elif self.pos.x > SCREEN_DIMS.x:
-            self.pos.x = SCREEN_DIMS.x
+        elif self.pos.x > x_max:
+            self.pos.x = x_max
             self.vel.x = 0
 
     def fly(self, dir):
@@ -27,4 +37,7 @@ class Ship:
             sprite = 0
         if self.vel.x >= 10:
             sprite = 2
-        SHIP_SPRITES.draw_sprite(sprite, self.pos.x, self.pos.y)
+
+        self.scene.game.graphics.draw_sprite(
+            self.scene.game.sprite_sheets.ships,
+            sprite, self.pos.x, self.pos.y)

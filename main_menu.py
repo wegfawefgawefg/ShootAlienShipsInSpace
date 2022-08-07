@@ -6,7 +6,7 @@ from pygame.locals import (
 )
 
 from scene import Scene
-from space_battle import SpaceBattle
+import space_battle
 
 
 class MainMenu(Scene):
@@ -39,11 +39,11 @@ class MainMenu(Scene):
         if event.type == pygame.KEYDOWN and event.key in [K_ESCAPE, K_q]:
             self.game.quit()
             return
-
-            # self.game.music.main_menu_song.stop()
-            # self.game.graphics.primary_surface = pygame.Surface(
-            #     self.game.graphics.screen_dims)
-            # self.game.set_scene(SpaceBattle(self.game))
+        if event.type == pygame.KEYDOWN:
+            self.game.music.main_menu_song.stop()
+            self.game.graphics.primary_surface = pygame.Surface(
+                self.game.graphics.screen_dims)
+            self.game.set_scene(space_battle.SpaceBattle(self.game))
 
     def step(self):
         pass

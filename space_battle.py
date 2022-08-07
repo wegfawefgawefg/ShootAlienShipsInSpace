@@ -4,7 +4,7 @@ from pygame.locals import (
 )
 import pymunk
 
-import scene
+from scene import Scene
 from ship import Ship
 from starfield import StarField
 from ship_controller import ShipController
@@ -12,10 +12,10 @@ from bullet_controller import BulletController
 from warp_controller import WarpController
 from debris import Debris
 from killzones import KillZones
-from main_menu import MainMenu
+import main_menu
 
 
-class SpaceBattle(scene.Scene):
+class SpaceBattle(Scene):
     def __init__(self, game) -> None:
         super().__init__(game)
 
@@ -24,15 +24,16 @@ class SpaceBattle(scene.Scene):
         self.ship = Ship(self)
         self.star_field = StarField(self)
 
-        self.ship_controller = ShipController(scene, self.ship)
-        self.bullet_controller = BulletController(scene, self.ship)
-        self.warp_controller = WarpController(scene, self.star_field)
+        self.ship_controller = ShipController(self, self.ship)
+        self.bullet_controller = BulletController(self, self.ship)
+        self.warp_controller = WarpController(self, self.star_field)
         self.controllers = [
             self.ship_controller,
             self.bullet_controller,
             self.warp_controller,
         ]
 
+        self.bullets = []
         self.enemies = []
         self.enemies.append(Debris(self))
         self.enemies.append(Debris(self))
@@ -47,27 +48,13 @@ class SpaceBattle(scene.Scene):
         if event.type == pygame.KEYDOWN and event.key in [K_ESCAPE, K_q]:
             for song in self.game.music.space_battle_songs:
                 song.stop()
-            self.game.set_scene(MainMenu(self.game))
+            self.game.set_scene(main_menu.MainMenu(self.game))
             return
 
         if event.type in [pygame.KEYDOWN, pygame.KEYUP]:
             name = pygame.key.name(event.key)
-            if event.type == pygame.KEYDOWN:
-                presstimes[name] = t
-
-                for controller in controllers:
-                    controller.control(event.key, press=True)
-
-            elif event.type == pygame.KEYUP:
-
-                for controller in controllers:
-                    controller.control(event.key, press=False)
-
-        if event.type == pygame.QUIT:
-            MUSIC[0].stop()
-            MUSIC[1].stop()
-            GAME_STATE = "main_menu"
-            return True
+            for controller in self.controllers:
+                controller.control(event.key, press=True)
 
     def step(self):
         m = self.game.get_mouse_position()
@@ -84,7 +71,7 @@ class SpaceBattle(scene.Scene):
         self.ship.step()
 
     def draw(self):
-        self.star_field.draw(self.ship)
+        self.star_field.draw()
         for bullet in self.bullets:
             bullet.draw()
         for enemy in self.enemies:
