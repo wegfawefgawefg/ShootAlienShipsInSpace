@@ -33,7 +33,7 @@ class StarField(entity.Entity):
             self.new_star()
 
         for star in self.stars:
-            star.step(dt * (1.0 + self.warp_level))
+            star.step(dt * 10.0 * (1.0 + self.warp_level))
             if star.pos.y >= (self.scene.game.graphics.screen_dims.y * 1.5):
                 self.remove(star)
 
@@ -48,7 +48,7 @@ class StarField(entity.Entity):
         ship = self.scene.ship
         c = self.scene.game.graphics.screen_dims / 2.0
         for star in self.stars:
-            offset = (c.elementwise() - ship.pos) / 2
+            offset = (c.elementwise() - ship.get_pos()) / 2
             star.draw(offset)
 
 

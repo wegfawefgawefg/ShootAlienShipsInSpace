@@ -30,8 +30,9 @@ class BulletController(controller.Controller):
         if key not in [K_a, K_s, K_d, K_f]:
             return
         if press and key == K_f:
+            ship_pos = self.ship.get_pos()
             Bullet(self.scene, Vector2(
-                self.ship.pos.x, self.ship.pos.y), 1)
+                ship_pos.x, ship_pos.y), 1)
 
     def step(self):
         pass
