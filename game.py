@@ -43,7 +43,7 @@ class Game:
             * self.graphics.screen_dims
 
     def run(self):
-        last_time = pygame.time.get_ticks()
+        last_time = self.time
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -65,4 +65,6 @@ class Game:
 
             self.time = pygame.time.get_ticks()
             self.dt = (self.time - last_time) / 1000.0
+            last_time = self.time
+
         pygame.quit()

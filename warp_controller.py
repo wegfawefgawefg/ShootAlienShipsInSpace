@@ -20,7 +20,7 @@ class WarpController(controller.Controller):
             else:
                 self.warping = False
                 self.warp_level = 0.0
-                self.game.sounds.stop_warp.play()
+                self.scene.game.sounds.stop_warp.play()
 
     def step(self):
         dt = self.scene.game.dt

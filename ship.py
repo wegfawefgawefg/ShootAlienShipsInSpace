@@ -13,7 +13,7 @@ class Ship(Entity):
     def step(self):
         dt = self.scene.game.dt
         self.pos = self.pos.elementwise() + self.vel * dt
-        self.vel = self.vel * 0.98 * dt
+        self.vel = self.vel * 0.99 * (1.0 - dt)
 
         x_max = self.scene.game.graphics.screen_dims.x
         y_max = self.scene.game.graphics.screen_dims.y
@@ -29,6 +29,7 @@ class Ship(Entity):
             self.vel.x = 0
 
     def fly(self, dir):
+        print(f"flying {dir}")
         self.vel += dir * 2.0
 
     def draw(self):

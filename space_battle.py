@@ -52,9 +52,9 @@ class SpaceBattle(Scene):
             return
 
         if event.type in [pygame.KEYDOWN, pygame.KEYUP]:
-            name = pygame.key.name(event.key)
             for controller in self.controllers:
-                controller.control(event.key, press=True)
+                controller.control(event.key, press=(
+                    event.type == pygame.KEYDOWN))
 
     def step(self):
         m = self.game.get_mouse_position()
