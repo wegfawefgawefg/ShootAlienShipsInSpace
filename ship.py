@@ -44,5 +44,5 @@ class Ship(Entity):
             sprite = 2
         p = self.get_pos()
         self.scene.game.graphics.draw_sprite(
-            self.scene.game.sprite_sheets.ships,
-            sprite, p.x, p.y)
+            self.scene.game.sprite_sheets.ships, sprite, p.x, p.y
+        )

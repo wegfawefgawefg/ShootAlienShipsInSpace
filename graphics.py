@@ -18,8 +18,6 @@ class Graphics:
         tile = tile % (sprite_sheet.width * sprite_sheet.height)
         self.primary_surface.blit(
             sprite_sheet.sheet,
-            (
-                x - sprite_sheet.half_sprite_width,
-                y - sprite_sheet.half_sprite_height
-            ),
-            sprite_sheet.get_tile_area(tile))
+            (x - sprite_sheet.half_sprite_width, y - sprite_sheet.half_sprite_height),
+            sprite_sheet.get_tile_area(tile),
+        )

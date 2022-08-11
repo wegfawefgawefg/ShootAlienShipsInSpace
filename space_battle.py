@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import (
-    K_q, K_ESCAPE,
+    K_q,
+    K_ESCAPE,
 )
 import pymunk
 
@@ -53,8 +54,7 @@ class SpaceBattle(Scene):
 
         if event.type in [pygame.KEYDOWN, pygame.KEYUP]:
             for controller in self.controllers:
-                controller.control(event.key, press=(
-                    event.type == pygame.KEYDOWN))
+                controller.control(event.key, press=(event.type == pygame.KEYDOWN))
 
     def step(self):
         m = self.game.get_mouse_position()
@@ -80,11 +80,11 @@ class SpaceBattle(Scene):
         self.ship.draw()
 
     def check_keyholding(self):
-        '''
+        """
         TODO:
         make general code for held buttons rather than pressed
         maybe holding is a bad mechanism in general?
-        '''
+        """
         # if name not in presstimes:
         #     continue
         # d = t - presstimes[name]

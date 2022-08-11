@@ -38,9 +38,8 @@ class Game:
     def get_mouse_position(self):
         wm = pygame.mouse.get_pos()
         return (
-            Vector2(wm[0], wm[1]).elementwise()
-            / self.graphics.window_dims).elementwise() \
-            * self.graphics.screen_dims
+            Vector2(wm[0], wm[1]).elementwise() / self.graphics.window_dims
+        ).elementwise() * self.graphics.screen_dims
 
     def run(self):
         last_time = self.time
@@ -59,7 +58,8 @@ class Game:
             self.graphics.primary_surface.fill((0, 0, 0))
             self.scene.draw()
             blit = pygame.transform.scale(
-                self.graphics.primary_surface, self.graphics.window.get_size())
+                self.graphics.primary_surface, self.graphics.window.get_size()
+            )
             self.graphics.window.blit(blit, (0, 0))
             pygame.display.flip()
 

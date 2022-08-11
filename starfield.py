@@ -12,17 +12,18 @@ class StarField(entity.Entity):
         self.warp_level = 10.0
         self.stars = []
         for _ in range(200):
-            y = random.random() * self.scene.game.graphics.screen_dims.y * \
-                2.0 - self.scene.game.graphics.screen_dims.y // 2
+            y = (
+                random.random() * self.scene.game.graphics.screen_dims.y * 2.0
+                - self.scene.game.graphics.screen_dims.y // 2
+            )
             self.new_star(y)
 
     def new_star(self, y=None):
         center_x = self.scene.game.graphics.screen_dims.x / 2.0
         y = y if y else -(self.scene.game.graphics.screen_dims.y // 2)
-        p = Vector2(self.scene.game.graphics.screen_dims.x *
-                    random.random() * 2.0, y)
+        p = Vector2(self.scene.game.graphics.screen_dims.x * random.random() * 2.0, y)
         p.x -= self.scene.game.graphics.screen_dims.x // 2.0
-        vy = (20.0 + (abs((center_x - p.x)) * 0.08) ** 2.0)
+        vy = 20.0 + (abs((center_x - p.x)) * 0.08) ** 2.0
         v = Vector2(0.0, vy)
         new_star = Star(self.scene, p, v)
         self.stars.append(new_star)
@@ -69,6 +70,5 @@ class Star(entity.Entity):
     def draw(self, offset):
         p = offset + self.pos
         self.scene.game.graphics.draw_sprite(
-            self.scene.game.sprite_sheets.particles,
-            28, p.x, p.y
+            self.scene.game.sprite_sheets.particles, 28, p.x, p.y
         )

@@ -6,10 +6,10 @@ from pymunk.vec2d import Vec2d as pvec2
 
 import entity
 
-'''
+"""
 add dict of bullets to scene
 put ids in the entity class so you dont repeat them
-'''
+"""
 
 
 class Bullet(entity.Entity):
@@ -38,9 +38,7 @@ class Bullet(entity.Entity):
         inertia = pymunk.moment_for_circle(mass, 0, radius, (0, 0))
         body = pymunk.Body(mass, inertia)
         body.position = self.pos.x, self.pos.y
-        self.shape = pymunk.Circle(
-            body, radius,
-            pvec2(0, 0))
+        self.shape = pymunk.Circle(body, radius, pvec2(0, 0))
 
         body.apply_impulse_at_local_point(pvec2(0.0, -Bullet.SPEED))
         self.scene.physics.add(body, self.shape)
@@ -64,13 +62,14 @@ class Bullet(entity.Entity):
     def draw(self):
         p = self.get_pos()
         self.scene.game.graphics.draw_sprite(
-            self.scene.game.sprite_sheets.particles,
-            self.t, p.x, p.y
+            self.scene.game.sprite_sheets.particles, self.t, p.x, p.y
         )
         pygame.draw.circle(
             self.scene.game.graphics.primary_surface,
-            (255, 0, 0), (p.x, p.y),
-            self.shape.radius, 1
+            (255, 0, 0),
+            (p.x, p.y),
+            self.shape.radius,
+            1,
         )
 
     def get_pos(self):

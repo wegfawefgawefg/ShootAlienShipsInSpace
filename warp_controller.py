@@ -1,6 +1,4 @@
-from pygame.locals import (
-    K_SPACE
-)
+from pygame.locals import K_SPACE
 
 import controller
 
@@ -30,6 +28,4 @@ class WarpController(controller.Controller):
             for _ in range(10):
                 self.star_field.new_star()
         else:
-            self.star_field.warp_level = max(
-                self.star_field.warp_level*0.99,
-                0.0)
+            self.star_field.warp_level = max(self.star_field.warp_level * 0.99, 0.0)

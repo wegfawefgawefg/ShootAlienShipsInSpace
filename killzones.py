@@ -9,12 +9,10 @@ class KillZones(entity.Entity):
         super().__init__(scene)
 
         dims = self.scene.game.graphics.screen_dims
-        self.right_shape = self.make_body(
-            (dims.x, 0), (dims.x, dims.y))
+        self.right_shape = self.make_body((dims.x, 0), (dims.x, dims.y))
         self.left_shape = self.make_body((-1, 0), (-1, dims.y))
         self.back_shape = self.make_body((0, 0), (dims.x, 0))
-        self.front_shape = self.make_body(
-            (0, dims.y), (dims.x, dims.y))
+        self.front_shape = self.make_body((0, dims.y), (dims.x, dims.y))
 
     def make_body(self, a, b):
         line_moment = pymunk.moment_for_segment(0, a, b, 10)
@@ -29,10 +27,11 @@ class KillZones(entity.Entity):
 
     def draw_line(self, shape):
         pygame.draw.line(
-            self.scene.game.graphics.PRIMARY_SURFACE, (255, 0, 0),
+            self.scene.game.graphics.PRIMARY_SURFACE,
+            (255, 0, 0),
             (shape.a.x, shape.a.y),
             (shape.b.x, shape.b.y),
-            1
+            1,
         )
 
     def draw(self):

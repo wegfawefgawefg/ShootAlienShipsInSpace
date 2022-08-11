@@ -14,12 +14,7 @@ class ShipController(controller.Controller):
         super().__init__(scene)
 
         self.ship = ship
-        self.down = {
-            K_LEFT: False,
-            K_RIGHT: False,
-            K_UP: False,
-            K_DOWN: False
-        }
+        self.down = {K_LEFT: False, K_RIGHT: False, K_UP: False, K_DOWN: False}
 
     def control(self, key, press):
         self.down[key] = press
