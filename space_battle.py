@@ -15,32 +15,21 @@ from debris import Debris
 from killzones import KillZones
 import main_menu
 
-
 class SpaceBattle(Scene):
     def __init__(self, game) -> None:
         super().__init__(game)
 
-        self.physics = pymunk.Space()
+        self.create_physics()
 
         self.ship = Ship(self)
         self.star_field = StarField(self)
+        for _ in range(0, 4):
+            Debris(self)
+        KillZones(self)
 
         self.ship_controller = ShipController(self, self.ship)
         self.bullet_controller = BulletController(self, self.ship)
         self.warp_controller = WarpController(self, self.star_field)
-        self.controllers = [
-            self.ship_controller,
-            self.bullet_controller,
-            self.warp_controller,
-        ]
-
-        self.bullets = []
-        self.enemies = []
-        self.enemies.append(Debris(self))
-        self.enemies.append(Debris(self))
-        self.enemies.append(Debris(self))
-        self.enemies.append(Debris(self))
-        self.kill_zones = KillZones(self)
 
         for song in self.game.music.space_battle_songs:
             song.play(loops=-1)
@@ -51,33 +40,7 @@ class SpaceBattle(Scene):
                 song.stop()
             self.game.set_scene(main_menu.MainMenu(self.game))
             return
-
-        if event.type in [pygame.KEYDOWN, pygame.KEYUP]:
-            for controller in self.controllers:
-                controller.control(event.key, press=(event.type == pygame.KEYDOWN))
-
-    def step(self):
-        m = self.game.get_mouse_position()
-        # TODO: you removed DT from the step args. you gotta go into each and make them pull from game object
-        for controller in self.controllers:
-            controller.step()
-        self.physics.step(self.game.dt)
-        self.star_field.step()
-        for bullet in self.bullets:
-            bullet.step()
-        for enemy in self.enemies:
-            enemy.step()
-        self.kill_zones.step()
-        self.ship.step()
-
-    def draw(self):
-        self.star_field.draw()
-        for bullet in self.bullets:
-            bullet.draw()
-        for enemy in self.enemies:
-            enemy.draw()
-        self.kill_zones.draw()
-        self.ship.draw()
+        super().control(event)
 
     def check_keyholding(self):
         """
@@ -85,6 +48,7 @@ class SpaceBattle(Scene):
         make general code for held buttons rather than pressed
         maybe holding is a bad mechanism in general?
         """
+        pass
         # if name not in presstimes:
         #     continue
         # d = t - presstimes[name]

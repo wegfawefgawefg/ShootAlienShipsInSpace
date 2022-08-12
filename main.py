@@ -2,7 +2,7 @@ from game import Game
 
 
 def main():
-    game = Game(" sdg")
+    game = Game()
     game.run()
 
 

@@ -4,7 +4,6 @@ from pygame import Vector2
 
 import entity
 
-
 class StarField(entity.Entity):
     def __init__(self, scene):
         super().__init__(scene)
@@ -53,11 +52,11 @@ class StarField(entity.Entity):
             star.draw(offset)
 
 
-class Star(entity.Entity):
+class Star():
     ID = 0
 
     def __init__(self, scene, pos, vel):
-        super().__init__(scene)
+        self.scene = scene
 
         self.id = Star.ID
         Star.ID += 1

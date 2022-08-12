@@ -1,3 +1,6 @@
+import random
+
+from icecream import ic
 import pygame
 import pymunk
 from pymunk import Vec2d as pvec2
@@ -18,8 +21,21 @@ class Debris(Entity):
         center = self.scene.game.graphics.screen_dims // 2
         self.body.position = center.x, center.y
         self.shape = pymunk.Circle(self.body, radius, pvec2(0, 0))
-
+        self.shape.collision_type = CollisionType.DEBRIS.value
         self.scene.physics.add(self.body, self.shape)
+
+        ch = self.scene.physics.add_collision_handler(
+            CollisionType.DEBRIS.value, CollisionType.BULLET.value
+        )
+        ch.begin = self.hit_by_bullet
+
+    def hit_by_bullet(self, arbiter, space, data):
+        # ic(arbiter)
+        # ic(space)
+        # ic(data)
+        print("this is not called")
+
+        return True
 
     def get_pos(self):
         return self.body.position

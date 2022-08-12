@@ -1,8 +1,19 @@
+import random
 import pygame
 import pymunk
 
 import entity
+from enums import CollisionType
 
+
+def kill_entity(arbiter, space, data):
+    killable_shape = arbiter.shapes[1]
+    if hasattr(killable_shape, "entity"):
+        e = killable_shape.entity
+        e.scene.remove_entity(e)
+        # random.choice(e.scene.game.sounds.rock_hit_by_laser).play()
+
+    return True
 
 class KillZones(entity.Entity):
     def __init__(self, scene) -> None:
@@ -13,6 +24,16 @@ class KillZones(entity.Entity):
         self.left_shape = self.make_body((-1, 0), (-1, dims.y))
         self.back_shape = self.make_body((0, 0), (dims.x, 0))
         self.front_shape = self.make_body((0, dims.y), (dims.x, dims.y))
+
+        shapes = [self.right_shape, self.left_shape, self.back_shape, self.front_shape]
+
+        for shape in shapes:
+            shape.collision_type = CollisionType.KILL_ZONE.value
+            self.scene.physics.add_collision_handler(
+                CollisionType.KILL_ZONE.value, CollisionType.BULLET.value).begin = kill_entity
+            self.scene.physics.add_collision_handler(
+                CollisionType.KILL_ZONE.value, CollisionType.DEBRIS.value).begin = kill_entity
+
 
     def make_body(self, a, b):
         line_moment = pymunk.moment_for_segment(0, a, b, 10)

@@ -10,3 +10,8 @@ class Sounds:
         ]
         self.start_warp = pygame.mixer.Sound("assets/start_warping.wav")
         self.stop_warp = pygame.mixer.Sound("assets/stop_warping.wav")
+        self.rock_hit_by_laser = [
+            pygame.mixer.Sound("assets/rockhit.wav"),
+            pygame.mixer.Sound("assets/rockhit2.wav"),
+            pygame.mixer.Sound("assets/rockhit3.wav"),
+        ]
