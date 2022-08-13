@@ -18,7 +18,6 @@ def remove_bullet(arbiter, space, data):
         bullet = bullet_shape.entity
         assert type(bullet) == Bullet
         bullet.scene.remove_entity(bullet)
-        random.choice(bullet.scene.game.sounds.rock_hit_by_laser).play()
 
     return True
 

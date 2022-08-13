@@ -1,3 +1,4 @@
+import random
 import pygame
 from pygame import Vector2
 
@@ -21,3 +22,8 @@ class Graphics:
             (x - sprite_sheet.half_sprite_width, y - sprite_sheet.half_sprite_height),
             sprite_sheet.get_tile_area(tile),
         )
+
+    def get_random_place_on_screen(self):
+        return Vector2(
+            random.randint(0, self.screen_dims.x), 
+            random.randint(0, self.screen_dims.y))
